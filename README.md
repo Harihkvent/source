@@ -1,5 +1,5 @@
 
-# Practical Career Navigator — Project Document
+# Practical Career Navigator — Project Document(base to design and refs)
 **Beginner-friendly, layout-aware resume parser + explainable job recommender and roadmap generator**
 
 ---
