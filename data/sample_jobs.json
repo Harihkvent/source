@@ -1,0 +1,52 @@
+[
+  {
+    "id": "1",
+    "title": "Software Engineer",
+    "company": "Tech Co",
+    "location": "Remote",
+    "description": "We are looking for a Software Engineer to join our team to build and maintain our backend systems. The ideal candidate should have experience with Python and web frameworks.",
+    "required_skills": ["python", "fastapi", "sql", "docker"],
+    "preferred_skills": ["aws", "kubernetes", "terraform"],
+    "min_experience": 2
+  },
+  {
+    "id": "2",
+    "title": "Data Analyst",
+    "company": "Data Insights Inc",
+    "location": "New York, NY",
+    "description": "Join our team as a Data Analyst to help us derive insights from our large datasets. You will work with various BI tools and databases.",
+    "required_skills": ["python", "sql", "tableau", "powerbi"],
+    "preferred_skills": ["r", "excel", "statistics"],
+    "min_experience": 1
+  },
+  {
+    "id": "3",
+    "title": "Frontend Developer",
+    "company": "WebDev Solutions",
+    "location": "San Francisco, CA",
+    "description": "We're seeking a Frontend Developer to create responsive web applications. You should be proficient with modern JavaScript frameworks.",
+    "required_skills": ["javascript", "typescript", "react", "css"],
+    "preferred_skills": ["redux", "nextjs", "graphql"],
+    "min_experience": 2
+  },
+  {
+    "id": "4",
+    "title": "Machine Learning Engineer",
+    "company": "AI Innovations",
+    "location": "Remote",
+    "description": "Help us build and deploy machine learning models that solve real-world problems. Experience with deep learning frameworks is required.",
+    "required_skills": ["python", "tensorflow", "pytorch", "machine learning"],
+    "preferred_skills": ["docker", "kubernetes", "aws"],
+    "min_experience": 3
+  },
+  {
+    "id": "5",
+    "title": "DevOps Engineer",
+    "company": "CloudOps",
+    "location": "Chicago, IL",
+    "description": "Join our team to build and maintain our CI/CD pipelines and cloud infrastructure. Experience with cloud providers is essential.",
+    "required_skills": ["docker", "kubernetes", "terraform", "aws"],
+    "preferred_skills": ["python", "golang", "jenkins"],
+    "min_experience": 2
+  }
+]
