@@ -1,0 +1,14 @@
+flowchart LR
+    %% Basic Flow Diagram for Practical Career Navigator
+
+    Upload["Upload Resume"] --> Parse["Parse Resume"]
+    Parse --> Extract["Extract Information"]
+    Extract --> Profile["Create Profile"]
+    Profile --> Match["Match with Jobs"]
+    Match --> Score["Score & Rank Jobs"]
+    Score --> Roadmap["Generate Skill Roadmap"]
+    Roadmap --> Display["Display Results"]
+    
+    %% Simple styling
+    classDef process fill:#d4f1f9,stroke:#333,color:#000
+    class Upload,Parse,Extract,Profile,Match,Score,Roadmap,Display process

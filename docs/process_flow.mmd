@@ -1,0 +1,10 @@
+flowchart LR
+  Upload["Upload Resume"] --> Parse["Parse Resume"]
+  Parse --> Profile["Create Profile"]
+  Profile --> Match["Match with Jobs"]
+  Match --> Roadmap["Generate Roadmap"]
+  Roadmap --> Display["Display Results"]
+  
+  %% Simple styling
+  classDef process fill:#d4f1f9,stroke:#333,color:#000
+  class Upload,Parse,Profile,Match,Roadmap,Display process

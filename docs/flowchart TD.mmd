@@ -1,0 +1,29 @@
+flowchart TD
+    %% Core Components
+    UI["Streamlit UI"]
+    API["FastAPI Backend"]
+    RP["Resume Parser"]
+    JR["Job Recommender"]
+    RG["Roadmap Generator"]
+    DB[("Database<br/>(SQLite)")]
+    
+    %% Simple Flow
+    UI -->|"Upload Resume"| API
+    API -->|"Parse"| RP
+    RP -->|"Return Profile"| API
+    API -->|"Get Recommendations"| JR
+    JR -->|"Return Jobs"| API
+    API -->|"Generate Roadmap"| RG
+    RG -->|"Return Skills Plan"| API
+    API -->|"Store/Retrieve"| DB
+    DB -->|"Data"| API
+    API -->|"Display Results"| UI
+    
+    %% Simple Styling
+    classDef frontend fill:#aef,stroke:#333,color:#000
+    classDef backend fill:#fea,stroke:#333,color:#000
+    classDef database fill:#eda,stroke:#333,color:#000
+    
+    class UI frontend
+    class API,RP,JR,RG backend
+    class DB database

@@ -20,49 +20,101 @@ def main():
     st.title("Practical Career Navigator")
     st.write("Upload your resume and get personalized job recommendations and a skill roadmap.")
     
-    # Sidebar
-    st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Select a page:", ["Resume Parser", "Job Recommendations", "Skill Roadmap"])
+    # Check if we need to force a specific page based on user actions
+    if "page" in st.session_state:
+        current_page = st.session_state.page
+        # Clear the page state so we don't get stuck
+        del st.session_state.page
+    else:
+        current_page = "Resume Parser"
     
-    # Pages
-    if page == "Resume Parser":
+    # Check if we already have a profile parsed - if so, show the navigation sidebar
+    if "profile" in st.session_state:
+        # Sidebar
+        st.sidebar.title("Navigation")
+        page = st.sidebar.radio("Select a page:", 
+                              ["Resume Parser", "Job Recommendations", "Skill Roadmap"],
+                              index=["Resume Parser", "Job Recommendations", "Skill Roadmap"].index(current_page))
+        
+        # Pages
+        if page == "Resume Parser":
+            display_resume_parser()
+        elif page == "Job Recommendations":
+            display_job_recommendations()
+        elif page == "Skill Roadmap":
+            display_skill_roadmap()
+    else:
+        # If no profile is parsed yet, only show the resume parser
         display_resume_parser()
-    elif page == "Job Recommendations":
-        display_job_recommendations()
-    elif page == "Skill Roadmap":
-        display_skill_roadmap()
 
 def display_resume_parser():
-    st.header("Resume Parser")
-    st.write("Upload your resume to extract information.")
-    
-    # File upload
-    uploaded_file = st.file_uploader("Choose a resume file", type=["pdf", "docx", "jpg", "jpeg", "png"])
-    
-    if uploaded_file is not None:
-        # Display the uploaded file
-        file_details = {"Filename": uploaded_file.name, "FileType": uploaded_file.type, "FileSize": f"{uploaded_file.size / 1024:.2f} KB"}
-        st.write(file_details)
+    # Check if we're showing a previously parsed profile or a new upload
+    if "profile" in st.session_state and not st.sidebar.button("Upload New Resume"):
+        st.header("Extracted Resume Information")
+        st.info("Your resume has been successfully parsed. You can view recommendations in the sidebar navigation or upload a new resume.")
         
-        # Parse button
-        if st.button("Parse Resume"):
-            with st.spinner("Parsing resume..."):
-                try:
-                    # Submit file to API
-                    files = {"file": (uploaded_file.name, uploaded_file, uploaded_file.type)}
-                    response = requests.post(f"{API_URL}/parse-resume/", files=files)
-                    
-                    if response.status_code == 200:
-                        profile_data = response.json()
-                        st.session_state.profile = profile_data
+        # Add a download button for the extracted profile as JSON
+        profile_json = json.dumps(st.session_state.profile, indent=2)
+        st.download_button(
+            label="Download Profile Data (JSON)",
+            data=profile_json,
+            file_name="my_profile.json",
+            mime="application/json"
+        )
+        
+        # Display the parsed profile information prominently
+        display_profile(st.session_state.profile)
+        
+        # Add buttons for next steps
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Get Job Recommendations"):
+                st.session_state.page = "Job Recommendations"
+                st.experimental_rerun()
+        with col2:
+            if st.button("Upload Different Resume"):
+                del st.session_state.profile
+                st.experimental_rerun()
+    else:
+        # New upload flow
+        st.header("Resume Parser")
+        st.write("Upload your resume to extract information.")
+        
+        # File upload
+        uploaded_file = st.file_uploader("Choose a resume file", type=["pdf", "docx", "jpg", "jpeg", "png"])
+        
+        if uploaded_file is not None:
+            # Display the uploaded file
+            file_details = {"Filename": uploaded_file.name, "FileType": uploaded_file.type, "FileSize": f"{uploaded_file.size / 1024:.2f} KB"}
+            st.write(file_details)
+            
+            # Parse button
+            if st.button("Parse Resume"):
+                with st.spinner("Parsing resume..."):
+                    try:
+                        # Submit file to API
+                        files = {"file": (uploaded_file.name, uploaded_file, uploaded_file.type)}
+                        response = requests.post(f"{API_URL}/parse-resume/", files=files)
                         
-                        # Display parsed information
-                        st.success("Resume parsed successfully!")
-                        display_profile(profile_data)
-                    else:
-                        st.error(f"Error: {response.text}")
-                except Exception as e:
-                    st.error(f"An error occurred: {str(e)}")
+                        if response.status_code == 200:
+                            profile_data = response.json()
+                            st.session_state.profile = profile_data
+                            
+                            # Display parsed information
+                            st.success("Resume parsed successfully!")
+                            st.balloons()  # Add a fun effect for successful parsing
+                            
+                            # Display extracted information prominently
+                            display_profile(profile_data)
+                            
+                            # Add a button to proceed to recommendations
+                            if st.button("View Job Recommendations"):
+                                st.session_state.page = "Job Recommendations"
+                                st.experimental_rerun()
+                        else:
+                            st.error(f"Error: {response.text}")
+                    except Exception as e:
+                        st.error(f"An error occurred: {str(e)}")
 
 def display_job_recommendations():
     st.header("Job Recommendations")
@@ -170,40 +222,76 @@ def display_skill_roadmap():
         st.write("---")
 
 def display_profile(profile):
-    """Display the parsed profile information"""
-    st.subheader("Parsed Information")
+    """Display the parsed profile information in a simple, direct format"""
+    st.header("Extracted Content from Resume")
     
-    col1, col2 = st.columns(2)
+    # Display the raw text of the resume first
+    st.subheader("Full Resume Text")
+    if profile.get('raw_text'):
+        st.text_area("Resume Content:", profile.get('raw_text'), height=300)
+    else:
+        st.write("No raw text content available")
     
-    with col1:
-        st.write(f"**Name:** {profile.get('name', 'N/A')}")
-        st.write(f"**Email:** {profile.get('email', 'N/A')}")
-        st.write(f"**Phone:** {profile.get('phone', 'N/A')}")
+    st.subheader("Extracted Information")
     
-    with col2:
-        if profile.get('skills'):
-            st.write("**Skills:**")
-            skills_df = pd.DataFrame({"Skills": profile['skills']})
-            st.dataframe(skills_df)
+    # Personal Information - simple text display
+    st.write("### Personal Details")
+    st.write(f"Name: {profile.get('name', 'Not detected')}")
+    st.write(f"Email: {profile.get('email', 'Not detected')}")
+    st.write(f"Phone: {profile.get('phone', 'Not detected')}")
+    if profile.get('address'):
+        st.write(f"Address: {profile.get('address')}")
     
-    # Education
+    # Skills - simple list
+    st.write("### Skills Detected")
+    if profile.get('skills'):
+        for skill in profile.get('skills', []):
+            st.write(f"- {skill}")
+    else:
+        st.write("No skills were detected in the resume")
+    
+    # Education - simple text without formatting
     if profile.get('education'):
-        st.subheader("Education")
-        for edu in profile['education']:
-            st.write(f"**{edu.get('degree', 'Degree')}** - {edu.get('institution', 'Institution')}")
-            if edu.get('start_date') and edu.get('end_date'):
-                st.write(f"{edu['start_date']} - {edu['end_date']}")
-    
-    # Experience
-    if profile.get('experience'):
-        st.subheader("Experience")
-        for exp in profile['experience']:
-            st.write(f"**{exp.get('role', 'Role')}** - {exp.get('company', 'Company')}")
-            if exp.get('start_date') and exp.get('end_date'):
-                st.write(f"{exp['start_date']} - {exp['end_date']}")
-            if exp.get('description'):
-                st.write(exp['description'])
+        st.write("### Education")
+        for edu in profile.get('education', []):
+            st.write(f"Degree: {edu.get('degree', 'Not specified')}")
+            st.write(f"Institution: {edu.get('institution', 'Not specified')}")
+            if edu.get('start_date'):
+                st.write(f"Start Date: {edu.get('start_date')}")
+            if edu.get('end_date'):
+                st.write(f"End Date: {edu.get('end_date')}")
+            if edu.get('description'):
+                st.write(f"Description: {edu.get('description')}")
             st.write("---")
+    
+    # Experience - simple text without formatting
+    if profile.get('experience'):
+        st.write("### Work Experience")
+        for exp in profile.get('experience', []):
+            st.write(f"Role: {exp.get('role', 'Not specified')}")
+            st.write(f"Company: {exp.get('company', 'Not specified')}")
+            if exp.get('start_date'):
+                st.write(f"Start Date: {exp.get('start_date')}")
+            if exp.get('end_date'):
+                st.write(f"End Date: {exp.get('end_date')}")
+            if exp.get('description'):
+                st.write(f"Description: {exp.get('description')}")
+            st.write("---")
+    
+    # Projects - simple text without formatting
+    if profile.get('projects'):
+        st.write("### Projects")
+        for proj in profile.get('projects', []):
+            st.write(f"Name: {proj.get('name', 'Not specified')}")
+            if proj.get('technologies'):
+                st.write(f"Technologies: {', '.join(proj.get('technologies', []))}")
+            if proj.get('description'):
+                st.write(f"Description: {proj.get('description')}")
+            st.write("---")
+    
+    # Display the full JSON for developers
+    with st.expander("View Full Extracted JSON Data"):
+        st.json(profile)
 
 if __name__ == "__main__":
     main()

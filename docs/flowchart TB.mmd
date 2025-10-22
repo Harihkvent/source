@@ -1,0 +1,83 @@
+flowchart TB
+    %% User Interface Layer
+    subgraph "Frontend"
+        UI["Streamlit UI"]
+        UI -->|"Upload Resume"| API
+    end
+    
+    %% API Layer
+    subgraph "Backend API"
+        API["FastAPI Backend"]
+        API -->|"Process"| RP
+        API -->|"Request"| JR
+        API -->|"Generate"| RG
+        API -->|"Store/Retrieve"| DB
+    end
+    
+    %% Processing Components
+    subgraph "Resume Processing"
+        RP["Resume Parser"]
+        OCR["OCR Engine<br/>(pdf2image + pytesseract)"]
+        PRS["Layout Processor<br/>(y-axis clustering)"]
+        NER["NER Extraction<br/>(spaCy + PhraseMatcher)"]
+        NORM["Skill Normalizer<br/>(RapidFuzz + embedding)"]
+        
+        RP -->|"Extract Text"| OCR
+        OCR -->|"Group by Layout"| PRS
+        PRS -->|"Extract Entities"| NER
+        NER -->|"Normalize Skills"| NORM
+        NORM -->|"Return Profile"| API
+    end
+    
+    %% Job Matching Components
+    subgraph "Job Matching"
+        JR["Job Recommender"]
+        IDX["Job Index<br/>(TF-IDF/SBERT)"]
+        RET["Retrieval<br/>(NearestNeighbors)"]
+        RRK["Re-Ranker<br/>(LogisticRegression)"]
+        
+        JR -->|"Search"| IDX
+        IDX -->|"Initial Matches"| RET
+        RET -->|"Candidates"| RRK
+        RRK -->|"Ranked Results"| API
+    end
+    
+    %% Roadmap Generation
+    subgraph "Roadmap Generation"
+        RG["Roadmap Generator"]
+        SC["Skill Comparator"]
+        RS["Resource Selector"]
+        
+        RG -->|"Analyze Gaps"| SC
+        SC -->|"Select Resources"| RS
+        RS -->|"Build Roadmap"| API
+    end
+    
+    %% Data Storage
+    subgraph "Data Layer"
+        DB[("Database<br/>(PostgreSQL/SQLite)")]
+        PROF["Profile Store"]
+        JOBS["Job Store"]
+        SKLS["Skills Taxonomy"]
+        LOG["User Feedback Log"]
+        
+        DB -->|"Stores"| PROF
+        DB -->|"Stores"| JOBS
+        DB -->|"Stores"| SKLS
+        DB -->|"Stores"| LOG
+    end
+
+    %% External Resources
+    subgraph "External Resources"
+        EXT["Learning Resources"]
+        RS -->|"Link To"| EXT
+    end
+
+    %% Additional Information
+    classDef primary fill:#f9f,stroke:#333,stroke-width:2px
+    classDef secondary fill:#bbf,stroke:#333,stroke-width:1px
+    classDef storage fill:#fda,stroke:#333,stroke-width:1px
+    
+    class UI,API primary
+    class RP,JR,RG,OCR,IDX,SC secondary
+    class DB,PROF,JOBS,SKLS,LOG storage
